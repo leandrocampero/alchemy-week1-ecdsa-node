@@ -1,8 +1,11 @@
-const { secp256k1 } = require("ethereum-cryptography/secp256k1.js");
-const { toHex } = require("ethereum-cryptography/utils.js");
+const { secp256k1 } = require("ethereum-cryptography/secp256k1");
+const { toHex } = require("ethereum-cryptography/utils");
+const { keccak256 } = require("ethereum-cryptography/keccak");
+const { writeFileSync } = require("fs");
 
 // Generate 10 wallet addresses
 const LOOP_SIZE = 10;
+let balances = {};
 
 for (let index = 0; index < LOOP_SIZE; index++) {
   console.log(`Account Nº${index}`);
@@ -13,10 +16,15 @@ for (let index = 0; index < LOOP_SIZE; index++) {
   const publicKey = secp256k1.getPublicKey(privateKey);
   console.log(`Public Key: ${toHex(publicKey)}`);
 
-  const address = toHex(publicKey).slice(-10);
-  console.log(`Address: 0x${address}\n`);
+  const address = keccak256(publicKey.slice(1)).slice(-20);
+  console.log(`Address: 0x${toHex(address)}\n`);
+
+  balances[`0x${toHex(address)}`] = Math.floor(
+    Math.random() * (100 + 1 - 1) + 1
+  );
 }
 
+writeFileSync("./balances.json", JSON.stringify(balances), "utf-8");
 /**
  * Account Nº0: 0x8300c3a374
  * Account Nº1: 0x07ea5f0dc3
